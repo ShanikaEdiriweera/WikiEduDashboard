@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'rails_helper'
 
 describe UserProfilesController do
@@ -46,7 +47,7 @@ describe UserProfilesController do
 
     context 'when current_user is not the same user nor an admin' do
       let(:user) { create(:user, email: 'fake_email@gmail.com') }
-      let(:unauthorised_user) { create(:user) }
+      let(:unauthorised_user) { create(:user, username: 'unauthorized') }
       it 'does not shows the email id' do
         allow(controller).to receive(:current_user).and_return(unauthorised_user)
         get :show, params: { username: user.username }
@@ -104,24 +105,23 @@ describe UserProfilesController do
         allow(controller).to receive(:current_user).and_return(user)
       end
       it 'updates the bio' do
-        post :update, params: { username: user.username, user_profile: { id: profile.id, user_id: profile.user_id, bio: 'Howdy'} }
+        post :update, params: { username: user.username, user_profile: { id: profile.id, user_id: profile.user_id, bio: 'Howdy' } }
         expect(user.user_profile.bio).to eq 'Howdy'
       end
 
       it 'updates the location' do
-        post :update, params: { username: user.username, user_profile: { id: profile.id, user_id: profile.user_id, location: 'Seattle'} }
+        post :update, params: { username: user.username, user_profile: { id: profile.id, user_id: profile.user_id, location: 'Seattle' } }
         expect(user.user_profile.location).to eq 'Seattle'
       end
 
       it 'updates the Institution' do
-        post :update, params: { username: user.username, user_profile: { id: profile.id, user_id: profile.user_id, institution: 'Institution'} }
+        post :update, params: { username: user.username, user_profile: { id: profile.id, user_id: profile.user_id, institution: 'Institution' } }
         expect(user.user_profile.institution).to eq 'Institution'
       end
 
-
       it 'updates the Image' do
         file = fixture_file_upload('wiki-logo.png', 'image/png')
-        post :update, params: { username: user.username, user_profile: { id: profile.id, user_id: profile.user_id, image: file} }
+        post :update, params: { username: user.username, user_profile: { id: profile.id, user_id: profile.user_id, image: file } }
         expect(response.status).to eq(302)
         expect(user.user_profile.image).not_to be_nil
       end
@@ -131,23 +131,23 @@ describe UserProfilesController do
       let(:user) { create(:user) }
       let(:profile) { create(:user_profile, user_id: user.id) }
       it 'doesn\'t update the bio' do
-        post :update, params: { username: user.username, user_profile: { id: profile.id, user_id: profile.user_id, bio: 'Howdy'} }
+        post :update, params: { username: user.username, user_profile: { id: profile.id, user_id: profile.user_id, bio: 'Howdy' } }
         expect(user.user_profile.bio).not_to eq 'Howdy'
       end
 
       it ' doesn\'t update the location' do
-        post :update, params: { username: user.username, user_profile: { id: profile.id, user_id: profile.user_id, location: 'Seattle'} }
+        post :update, params: { username: user.username, user_profile: { id: profile.id, user_id: profile.user_id, location: 'Seattle' } }
         expect(user.user_profile.location).not_to eq 'Seattle'
       end
 
       it 'doesn\'t update the Institution' do
-        post :update, params: { username: user.username, user_profile: { id: profile.id, user_id: profile.user_id, institution: 'Institution'} }
+        post :update, params: { username: user.username, user_profile: { id: profile.id, user_id: profile.user_id, institution: 'Institution' } }
         expect(user.user_profile.institution).not_to eq 'Institution'
       end
 
       it 'doesn\'t update the Image' do
         file = fixture_file_upload('wiki-logo.png', 'image/png')
-        post :update, params: { username: user.username, user_profile: { id: profile.id, user_id: profile.user_id, image: file} }
+        post :update, params: { username: user.username, user_profile: { id: profile.id, user_id: profile.user_id, image: file } }
         expect(response.status).not_to eq(302)
       end
     end

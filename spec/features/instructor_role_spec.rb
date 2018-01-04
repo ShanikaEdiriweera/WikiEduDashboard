@@ -1,9 +1,11 @@
 # frozen_string_literal: true
+
 require 'rails_helper'
 
 describe 'Instructor users', type: :feature, js: true do
   before do
-    include Devise::TestHelpers, type: :feature
+    include type: :feature
+    include Devise::TestHelpers
     page.current_window.resize_to(1920, 1080)
   end
 
@@ -78,7 +80,9 @@ describe 'Instructor users', type: :feature, js: true do
     end
 
     it 'should be able to add students' do
-      allow_any_instance_of(WikiApi).to receive(:get_user_id).and_return(123)
+      allow_any_instance_of(WikiApi).to receive(:get_user_info).and_return(
+        'name' => 'Risker', 'userid' => 123, 'centralids' => { 'CentralAuth' => 456 }
+      )
       visit "/courses/#{Course.first.slug}/students"
       sleep 1
       click_button 'Enrollment'

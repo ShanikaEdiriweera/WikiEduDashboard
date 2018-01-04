@@ -38,11 +38,12 @@
 
           .section
             - if current_user == @user || current_user&.admin?
-              #user_id
-                #icon
-                  &#x2709;
-                %p
-                  #{@user.email}
+              - if @user.email.present?
+                #user_id
+                  #icon
+                    &#x2709;
+                  %p
+                    #{@user.email}
 
           .section
             #user_location
@@ -65,3 +66,10 @@
                   %p.rails_editable-content
                     = @user.user_profile.institution
                 = text_area(:user_profile, :institution, class: 'rails_editable-input', placeholder:t("user_profiles.institution_placeholder"))
+
+          .section
+            #profile_user_contributions
+              - if @courses_users.last
+                %p
+                  %i.icon.icon-z-external-link
+                  = contribution_link(@courses_users.last, 'Contributions', 'contribution_link')

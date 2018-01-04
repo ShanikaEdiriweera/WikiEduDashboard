@@ -1,3 +1,4 @@
+import _ from 'lodash';
 const I18n = require('i18n-js');
 
 const CourseUtils = class {
@@ -14,7 +15,7 @@ const CourseUtils = class {
   }
   slugify(text) {
     if (typeof text !== 'undefined' && text !== null) {
-      return text.split(/\s/).join('_');
+      return text.split(/\s+/).join('_');
     }
   }
 
@@ -29,9 +30,9 @@ const CourseUtils = class {
 
   cleanupCourseSlugComponents(course) {
     const cleanedCourse = course;
-    cleanedCourse.title = course.title.trim();
-    cleanedCourse.school = course.school.trim();
-    cleanedCourse.term = course.term.trim();
+    cleanedCourse.title = course.title.trim().split(/\s+/).join(' ');
+    cleanedCourse.school = course.school.trim().split(/\s+/).join(' ');
+    cleanedCourse.term = course.term.trim().split(/\s+/).join(' ');
     return cleanedCourse;
   }
 
@@ -55,11 +56,24 @@ const CourseUtils = class {
       };
     }
 
-    const urlParts = /([a-z-]+)\.(wik[a-z]+)\.org\/wiki\/([^#]*)/.exec(articleTitle);
+    const urlParts = /([a-z-]+)\.(?:m\.)?(wik[a-z]+)\.org\/wiki\/([^#]*)/.exec(articleTitle);
     if (urlParts && urlParts.length > 3) {
       const title = decodeURIComponent(urlParts[3]).replace(/_/g, ' ');
       const project = urlParts[2];
       const language = urlParts[1];
+      return {
+        title,
+        project,
+        language,
+        article_url: articleTitle
+      };
+    }
+
+    const wikisourceUrlParts = /wikisource\.org\/wiki\/([^#]*)/.exec(articleTitle);
+    if (wikisourceUrlParts) {
+      const title = decodeURIComponent(wikisourceUrlParts[1]).replace(/_/g, ' ');
+      const project = 'wikisource';
+      const language = 'www';
       return {
         title,
         project,
@@ -75,26 +89,22 @@ const CourseUtils = class {
     };
   }
 
-  articleFromAssignment(assignment) {
-    const language = assignment.language || 'en';
-    const project = assignment.project || 'wikipedia';
+  articleFromAssignment(assignment, defaultWiki) {
+    const language = assignment.language || defaultWiki.language || 'en';
+    const project = assignment.project || defaultWiki.project || 'wikipedia';
     const articleUrl = assignment.article_url || this.urlFromTitleAndWiki(assignment.article_title, language, project);
-    const formattedTitle = this.formattedArticleTitle(
-      language,
-      project,
-      assignment.article_title
-    );
     const article = {
       rating: assignment.article_rating,
       rating_num: assignment.article_rating_num,
       pretty_rating: assignment.article_pretty_rating,
       url: articleUrl,
       title: assignment.article_title,
-      formatted_title: formattedTitle,
+      article_id: assignment.article_id,
       language,
       project,
       new: false
     };
+    article.formatted_title = this.formattedArticleTitle(article, defaultWiki);
     return article;
   }
 
@@ -103,22 +113,29 @@ const CourseUtils = class {
     return `https://${language}.${project}.org/wiki/${underscoredTitle}`;
   }
 
-  formattedArticleTitle(language, project, articleTitle) {
+  formattedArticleTitle(article, defaultWiki) {
     let languagePrefix = '';
-    if (language === undefined || language === 'en') {
+    if (!defaultWiki || !article.language || article.language === defaultWiki.language) {
       languagePrefix = '';
     } else {
-      languagePrefix = `${language}:`;
+      languagePrefix = `${article.language}:`;
     }
 
     let projectPrefix = '';
-    if (project === undefined || project === 'wikipedia') {
+    if (!defaultWiki || article.project === defaultWiki.project || !article.project) {
       projectPrefix = '';
     } else {
-      projectPrefix = `${project}:`;
+      projectPrefix = `${article.project}:`;
     }
 
-    return `${languagePrefix}${projectPrefix}${articleTitle}`;
+    return `${languagePrefix}${projectPrefix}${article.title}`;
+  }
+
+  formattedCategoryName(category, defaultWiki) {
+    category.title = category.name;
+    category.language = category.wiki.language;
+    category.project = category.wiki.project;
+    return this.formattedArticleTitle(category, defaultWiki);
   }
 
   hasTrainings(weeks) {

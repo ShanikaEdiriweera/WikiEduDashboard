@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require "#{Rails.root}/lib/course_cache_manager"
 require "#{Rails.root}/lib/chat/rocket_chat"
 
@@ -6,10 +7,12 @@ require "#{Rails.root}/lib/chat/rocket_chat"
 class JoinCourse
   attr_reader :result
 
-  def initialize(course:, user:, role:)
+  def initialize(course:, user:, role:, real_name: nil, role_description: nil)
     @course = course
     @user = user
     @role = role
+    @real_name = real_name
+    @role_description = role_description
     process_join_request
   end
 
@@ -48,7 +51,7 @@ class JoinCourse
 
   def student_joining_before_approval?
     return false unless student_role?
-    @course.campaigns.empty?
+    !@course.approved?
   end
 
   def student_role?
@@ -59,7 +62,9 @@ class JoinCourse
     CoursesUsers.create(
       user_id: @user.id,
       course_id: @course.id,
-      role: @role
+      role: @role,
+      real_name: @real_name,
+      role_description: @role_description
     )
   end
 

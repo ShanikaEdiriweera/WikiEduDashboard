@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'rails_helper'
 
 MILESTONE_BLOCK_KIND = 2
@@ -29,6 +30,7 @@ course_end = '2015-12-31'
 describe 'the course page', type: :feature, js: true do
   let(:es_wiktionary) { create(:wiki, language: 'es', project: 'wiktionary') }
   before do
+    stub_wiki_validation
     page.current_window.resize_to(1920, 1080)
 
     course = create(:course,
@@ -241,7 +243,7 @@ describe 'the course page', type: :feature, js: true do
       find('th.sortable', text: 'Class').click
       new_first_rating = page.first(:css, 'table.articles').first('td .rating p')
       expect(new_first_rating).to have_content '-'
-      title = page.first(:css, 'table.articles').first('td p.title')
+      title = page.first(:css, 'table.articles').first('td .title')
       expect(title).to have_content 'es:wiktionary:Article'
     end
 
@@ -318,29 +320,31 @@ describe 'the course page', type: :feature, js: true do
     end
 
     it 'allows student to select an available article' do
-      stub_info_query
-      user = create(:user, id: user_count + 100)
-      course = Course.first
-      create(:courses_user, course_id: course.id, user_id: user.id,
-                            role: CoursesUsers::Roles::STUDENT_ROLE)
-      wiki = Wiki.first
-      AssignmentManager.new(user_id: nil,
-                            course: course,
-                            wiki: wiki,
-                            title: 'Education',
-                            role: 0).create_assignment
+      VCR.use_cassette 'assigned_articles_item' do
+        stub_info_query
+        user = create(:user, id: user_count + 100)
+        course = Course.first
+        create(:courses_user, course_id: course.id, user_id: user.id,
+                              role: CoursesUsers::Roles::STUDENT_ROLE)
+        wiki = Wiki.first
+        AssignmentManager.new(user_id: nil,
+                              course: course,
+                              wiki: wiki,
+                              title: 'Education',
+                              role: 0).create_assignment
 
-      login_as(user, scope: :user)
-      js_visit "/courses/#{slug}/articles"
-      expect(page).to have_content 'Available Articles'
-      assigned_articles_section = page.first(:css, '#available-articles')
-      expect(assigned_articles_section).to have_content 'Education'
-      expect(Assignment.count).to eq(1)
-      expect(assigned_articles_section).to have_content 'Select'
-      click_button 'Select'
-      sleep 1
-      expect(Assignment.first.user_id).to eq(user.id)
-      expect(Assignment.first.role).to eq(0)
+        login_as(user, scope: :user)
+        js_visit "/courses/#{slug}/articles"
+        expect(page).to have_content 'Available Articles'
+        assigned_articles_section = page.first(:css, '#available-articles')
+        expect(assigned_articles_section).to have_content 'Education'
+        expect(Assignment.count).to eq(1)
+        expect(assigned_articles_section).to have_content 'Select'
+        click_button 'Select'
+        sleep 1
+        expect(Assignment.first.user_id).to eq(user.id)
+        expect(Assignment.first.role).to eq(0)
+      end
     end
   end
 
@@ -399,11 +403,7 @@ describe 'the course page', type: :feature, js: true do
       login_as(user, scope: :user)
       stub_oauth_edit
 
-      Dir["#{Rails.root}/lib/importers/*.rb"].each { |file| require file }
-      allow(UserImporter).to receive(:update_users)
       allow(CourseRevisionUpdater).to receive(:import_new_revisions)
-      allow(ViewImporter).to receive(:update_views)
-      allow(RatingImporter).to receive(:update_ratings)
 
       visit "/courses/#{slug}/manual_update"
       js_visit "/courses/#{slug}"

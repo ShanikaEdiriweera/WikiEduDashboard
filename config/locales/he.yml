@@ -113,7 +113,7 @@ he:
     title: כותרת \ שם
     title_example: שם הערך
     view: הצגת הערך
-    view_all: הצג הכל
+    view_all: להציג הכול
     view_doc: סך מספר הצפיות בכל ערך במהלך התוכנית
     view_on_wiki: הצג בוויקי
     views_added: נוספו %{count} צפיות חדשות לדף %{title}
@@ -231,6 +231,7 @@ he:
       start_date_placeholder: תאריך התחלה (שנה-חודש-יום)
       subject: נושא
     current: תוכניות \ קורסים \ מיזמים פעילים
+    data_edits: עורך נתונים
     delete_course: מחיקת התוכנית \ הקורס \ המיזם
     dismiss_survey: ביטול
     dismiss_survey_confirm: האם ברצונך לסגור לצמיתות את השאלון הזה?
@@ -284,6 +285,7 @@ he:
     start: התחלה
     start_typing: התחילו להקליד
     students: משתתפים
+    students_taught: תלמידים למדו
     students_count: מס' משתתפים
     student_editors: משתתפים עורכים
     students_none: בתוכנית \ בקורס \ במיזם הזה אין משתתפים.
@@ -487,7 +489,7 @@ he:
     no_timeline: אין לוח זמנים בתוכנית \ בקורס \ במיזם הזה.
     no_activity_this_week: אין פגישות מתוכננות השבוע
     nothing_this_week: לא מתוכנן שום דבר לשבוע הזה.
-    save_all_changes: שמירת הכל
+    save_all_changes: לשמור הכול
     this_week_title_default: השבוע
     title: לוח הזמנים
     unable_to_add_week: לא ניתן להוסיף שבועות חדשים שלוח הזמנים שלך מלא. יש למחוק

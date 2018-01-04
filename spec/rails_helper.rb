@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 # This file is copied to spec/ when you run 'rails generate rspec:install'
 ENV['RAILS_ENV'] ||= 'test'
 # Load spec_helper before rails, so that simplecov works properly.
@@ -12,9 +13,9 @@ require 'capybara/rspec'
 require 'capybara-screenshot/rspec'
 require 'capybara/poltergeist'
 
-url_blacklist = ['https://wikiedu.org', 'https://fonts.googleapis.com']
+url_blacklist = ['https://wikiedu.org', 'https://fonts.googleapis.com', 'http://sentry.example.com']
 Capybara.register_driver :poltergeist do |app|
-  Capybara::Poltergeist::Driver.new(app, js_errors: true, url_blacklist: url_blacklist)
+  Capybara::Poltergeist::Driver.new(app, js_errors: true, url_blacklist: url_blacklist, timeout: 60)
 end
 
 Capybara.configure do |config|
@@ -22,6 +23,7 @@ Capybara.configure do |config|
   config.default_max_wait_time = 10
 end
 
+Rails.cache.clear
 Capybara::Screenshot.prune_strategy = :keep_last_run
 Capybara.save_path = 'tmp/screenshots/'
 
@@ -81,7 +83,7 @@ RSpec.configure do |config|
       .to_return(status: 200, body: '<rss version="2.0" />', headers: {})
     stub_request(:get, /fonts.googleapis.com/)
       .with(headers: { 'Accept' => '*/*', 'User-Agent' => 'Ruby' })
-      .to_return(status: 200, body: '@font-face {}'.dup, headers: {})
+      .to_return(status: 200, body: +'@font-face {}', headers: {})
   end
 end
 

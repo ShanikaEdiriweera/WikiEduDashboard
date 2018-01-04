@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'rails_helper'
 
 describe NoEnrolledStudentsAlertMailer do
@@ -8,7 +9,9 @@ describe NoEnrolledStudentsAlertMailer do
     create(:courses_user, course_id: course.id, user_id: instructor.id,
                           role: CoursesUsers::Roles::INSTRUCTOR_ROLE)
   end
-  let(:content_expert) { create(:user, permissions: 1, email: 'ce@wikiedu.org') }
+  let(:content_expert) do
+    create(:user, username: 'content_expert', permissions: 1, email: 'ce@wikiedu.org')
+  end
   let!(:courses_user2) do
     create(:courses_user, course_id: course.id, user_id: content_expert.id,
                           role: CoursesUsers::Roles::WIKI_ED_STAFF_ROLE)

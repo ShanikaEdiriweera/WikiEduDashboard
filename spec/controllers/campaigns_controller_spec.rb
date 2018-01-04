@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'rails_helper'
 
 describe CampaignsController do
@@ -137,7 +138,7 @@ describe CampaignsController do
 
   describe '#remove_organizer' do
     let(:user) { create(:user) }
-    let(:user2) { create(:user) }
+    let(:user2) { create(:user, username: 'user2') }
     let(:campaign) { create(:campaign) }
     let(:organizer) do
       create(:campaigns_user, id: 5, user_id: user2.id, campaign_id: campaign.id,
@@ -268,6 +269,23 @@ describe CampaignsController do
     end
   end
 
+  describe '#articles_csv' do
+    let(:course) { create(:course) }
+    let(:campaign) { create(:campaign) }
+    let(:article) { create(:article) }
+    let(:request_params) { { slug: campaign.slug, format: :csv } }
+
+    before do
+      campaign.courses << course
+      create(:articles_course, article: article, course: course)
+    end
+    it 'returns a csv of course data' do
+      get :articles_csv, params: request_params
+      expect(response.body).to have_content(course.slug)
+      expect(response.body).to have_content(article.title)
+    end
+  end
+
   describe '#overview' do
     render_views
     let(:user) { create(:user) }
@@ -295,7 +313,7 @@ describe CampaignsController do
   describe '#programs' do
     render_views
     let(:course) { create(:course) }
-    let(:course2) { create(:course, title: 'Skydiving basket-weaving') }
+    let(:course2) { create(:course, title: 'course2', slug: 'foo/course2') }
     let(:campaign) { create(:campaign) }
 
     before do
@@ -332,9 +350,14 @@ describe CampaignsController do
 
       # when they are an admin...
       admin = create(:admin)
-      allow(controller).to receive(:current_user).and_return(user)
+      allow(controller).to receive(:current_user).and_return(admin)
       get :programs, params: { slug: campaign.slug }
       expect(response.body).to have_content(I18n.t('assignments.remove'))
+    end
+
+    it 'searches title, school, and term of campaign courses' do
+      get :programs, params: { slug: campaign.slug, courses_query: course.title }
+      expect(response.body).to have_content(course.title)
     end
   end
 end

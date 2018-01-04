@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 class UserProfilesController < ApplicationController
   respond_to :html, :json
 
@@ -8,7 +9,7 @@ class UserProfilesController < ApplicationController
 
   def show
     if @user
-      @courses_users = @user.courses_users
+      @courses_users = @user.courses_users.includes(:course).where(courses: { private: false })
       @user_profile = UserProfile.new(user_id: @user.id)
     else
       flash[:notice] = 'User not found'
@@ -17,19 +18,33 @@ class UserProfilesController < ApplicationController
   end
 
   def update
-    if @user_profile.update(user_profile_params)
-      flash[:notice] = 'Profile Updated'
-      redirect_to controller: 'user_profiles', action: 'show'
-    end
+    @user_profile.update! user_profile_params
+
+    flash[:notice] = 'Profile Updated'
+    redirect_to controller: 'user_profiles', action: 'show'
   end
 
   def stats
     @individual_stats_presenter = IndividualStatisticsPresenter.new(user: @user)
-    @courses_list = @user.courses.where('courses_users.role = ?', CoursesUsers::Roles::INSTRUCTOR_ROLE)
-    @courses_presenter = CoursesPresenter.new(current_user: current_user, courses_list: @courses_list)
+    @courses_list = public_courses.where('courses_users.role = ?',
+                                        CoursesUsers::Roles::INSTRUCTOR_ROLE)
+    @courses_presenter = CoursesPresenter.new(current_user: current_user,
+                                              courses_list: @courses_list)
+  end
+
+  def stats_graphs
+    @individual_stats_presenter = IndividualStatisticsPresenter.new(user: @user)
+    @courses_list = public_courses.where('courses_users.role = ?',
+                                        CoursesUsers::Roles::INSTRUCTOR_ROLE)
+    @courses_presenter = CoursesPresenter.new(current_user: current_user,
+                                              courses_list: @courses_list)
   end
 
   private
+
+  def public_courses
+    @user.courses.nonprivate
+  end
 
   def require_write_permissions
     return if current_user == @user

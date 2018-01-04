@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 #= Stubs for various requests
 module RequestHelpers
   ##################
@@ -51,6 +52,24 @@ module RequestHelpers
       "info":"The \"templateeditor\" right is required to edit this page",
       "*":"See https://en.wikipedia.org/w/api.php for API usage"}}'
     stub_request(:post, /.*wikipedia.*/)
+      .to_return(status: 200, body: failure, headers: {})
+  end
+
+  def stub_edit_failure_blocked
+    stub_token_request
+    failure = '{"servedby":"mw1135", "error":{"code":"blocked",
+      "info":"You have been blocked from editing.",
+      "*":"See http://en.wikipedia.org/w/api.php for API usage"}}'
+    stub_request(:post, /.*wikipedia*/)
+      .to_return(status: 200, body: failure, headers: {})
+  end
+
+  def stub_edit_failure_autoblocked
+    stub_token_request
+    failure = '{"servedby":"mw1135", "error":{"code":"autoblocked",
+      "info":"Your IP address has been blocked automatically.",
+      "*":"See http://en.wikipedia.org/w/api.php for API usage"}}'
+    stub_request(:post, /.*wikipedia*/)
       .to_return(status: 200, body: failure, headers: {})
   end
 
@@ -118,9 +137,45 @@ module RequestHelpers
       .to_return(status: 200, body: '{}', headers: {})
   end
 
+  def stub_list_users_query
+    stub_request(:get, /.*list=users.*/)
+      .to_return(status: 200, body: '{"users":[{"emailable":""}]}', headers: {})
+  end
+
+  def stub_list_users_query_with_no_email
+    stub_request(:get, /.*list=users.*/)
+      .to_return(status: 200, body: '{"users":[{}]}', headers: {})
+  end
+
+  def stub_wikipedia_503_error
+    stub_request(:get, /.*wikipedia.*/)
+      .to_return(status: 503, body: '{}', headers: {})
+  end
+
   def stub_commons_503_error
     stub_request(:get, /.*commons.wikimedia.org.*/)
       .to_return(status: 503, body: '', headers: {})
+  end
+
+  def stub_wiki_validation
+    wikis = [
+      'incubator.wikimedia.org',
+      'en.wiktionary.org',
+      'es.wiktionary.org',
+      'es.wikipedia.org',
+      'pt.wikipedia.org',
+      'ta.wiktionary.org',
+      'es.wikibooks.org',
+      'ar.wikibooks.org',
+      'en.wikivoyage.org',
+      'wikisource.org',
+      'www.wikidata.org'
+    ]
+
+    wikis.each do |wiki|
+      stub_request(:get, "https://#{wiki}/w/api.php?action=query&format=json&meta=siteinfo")
+        .to_return(status: 200, body: "{\"query\":{\"general\":{\"servername\":\"#{wiki}\"}}}", headers: {})
+    end
   end
 
   ###################
@@ -170,5 +225,10 @@ module RequestHelpers
     }
     stub_request(:post, /.*groups.invite/)
       .to_return(status: 200, body: success_response.to_json, headers: {})
+  end
+
+  def stub_chat_error
+    stub_request(:post, %r{.*/api/v1/.*})
+      .to_return(status: 403, body: '{}', headers: {})
   end
 end

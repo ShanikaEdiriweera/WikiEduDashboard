@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 class SalesforceController < ApplicationController
   respond_to :json, only: [:link]
   before_action :require_admin_permissions
@@ -10,6 +11,12 @@ class SalesforceController < ApplicationController
     @course.save
     PushCourseToSalesforce.new(@course)
     render json: { success: true, flags: @course.flags }
+  end
+
+  def update
+    @course = Course.find(params[:course_id])
+    PushCourseToSalesforce.new(@course)
+    render json: { success: true }
   end
 
   def create_media

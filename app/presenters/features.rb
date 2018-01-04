@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 class Features
   # This is for toggling Wiki Ed-specific features that should not be active
   # on any other dashboard instances.
@@ -22,10 +23,6 @@ class Features
 
   def self.disable_help?
     ENV['disable_help'] == 'true'
-  end
-
-  def self.disable_training?
-    ENV['disable_training'] == 'true'
   end
 
   def self.disable_wiki_output?
@@ -54,10 +51,6 @@ class Features
 
   def self.enable_language_switcher?
     ENV['enable_language_switcher'] == 'true'
-  end
-
-  def self.enable_revision_feedback?
-    Rails.env != 'production'
   end
 
   def self.wiki_trainings?

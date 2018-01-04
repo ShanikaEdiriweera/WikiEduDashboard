@@ -16,6 +16,7 @@
 #  target_user_id :integer
 #  subject_id     :integer
 #  resolved       :boolean          default(FALSE)
+#  details        :text(65535)
 #
 
 class Alert < ActiveRecord::Base
@@ -27,23 +28,31 @@ class Alert < ActiveRecord::Base
 
   include ArticleHelper
 
-  ALERT_TYPES = %w(
+  serialize :details, Hash
+
+  ALERT_TYPES = %w[
     ActiveCourseAlert
     ArticlesForDeletionAlert
+    BlockedEditsAlert
     ContinuedCourseActivityAlert
     DeletedUploadsAlert
+    DiscretionarySanctionsEditAlert
+    DYKNominationAlert
     NeedHelpAlert
     NoEnrolledStudentsAlert
     ProductiveCourseAlert
     SurveyResponseAlert
+    UnsubmittedCourseAlert
     UntrainedStudentsAlert
-  ).freeze
+  ].freeze
   validates_inclusion_of :type, in: ALERT_TYPES
 
-  RESOLVABLE_ALERT_TYPES = %w(
+  RESOLVABLE_ALERT_TYPES = %w[
     ArticlesForDeletionAlert
     ContinuedCourseActivityAlert
-  ).freeze
+    DiscretionarySanctionsEditAlert
+    DYKNominationAlert
+  ].freeze
 
   def course_url
     "https://#{ENV['dashboard_url']}/courses/#{course.slug}"

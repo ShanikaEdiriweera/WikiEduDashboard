@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 # == Schema Information
 #
 # Table name: users
@@ -22,9 +23,10 @@
 #  locale              :string(255)
 #  chat_password       :string(255)
 #  chat_id             :string(255)
+#  registered_at       :datetime
 #
 
-FactoryGirl.define do
+FactoryBot.define do
   factory :test_user, class: User do
     username 'Pizza'
     onboarded true

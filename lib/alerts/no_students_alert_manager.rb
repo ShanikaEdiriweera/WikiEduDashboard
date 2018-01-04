@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 class NoStudentsAlertManager
   def initialize(courses)
     @courses = courses
@@ -7,7 +8,7 @@ class NoStudentsAlertManager
   def create_alerts
     @courses.each do |course|
       next unless course.type == 'ClassroomProgramCourse'
-      next if course.campaigns.empty? # No alerts needed for unapproved courses
+      next unless course.approved? # No alerts needed for unapproved courses
       next unless course.students.empty?
       next unless within_no_student_alert_period?(course.timeline_start)
 

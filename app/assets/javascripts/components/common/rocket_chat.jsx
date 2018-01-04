@@ -1,13 +1,15 @@
 import React from 'react';
+import createReactClass from 'create-react-class';
+import PropTypes from 'prop-types';
 import ChatActions from '../../actions/chat_actions.js';
 import ChatStore from '../../stores/chat_store.js';
 
-const RocketChat = React.createClass({
+const RocketChat = createReactClass({
   displayName: 'RocketChat',
 
   propTypes: {
-    course: React.PropTypes.object,
-    current_user: React.PropTypes.object
+    course: PropTypes.object,
+    current_user: PropTypes.object
   },
 
   mixins: [ChatStore.mixin],
@@ -66,7 +68,7 @@ const RocketChat = React.createClass({
     if (!this.state.authToken) {
       chatClass += ' hidden';
     }
-    const chatFrame = <iframe id="chat" className={chatClass} src={chatUrl} />;
+    const chatFrame = <iframe id="chat" title="rocket chat" className={chatClass} src={chatUrl} />;
 
     let loginRetryButton;
     if (this.state.showChat) {

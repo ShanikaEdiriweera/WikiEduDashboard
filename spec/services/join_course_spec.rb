@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'rails_helper'
 
 describe JoinCourse do
@@ -21,6 +22,34 @@ describe JoinCourse do
   before(:each) do
     course.campaigns << Campaign.first
     enroll_as_instructor
+  end
+
+  context 'with real name' do
+    let(:course) { create(:basic_course) }
+    let(:subject) do
+      described_class.new(course: course, user: user,
+                          role: CoursesUsers::Roles::STUDENT_ROLE,
+                          real_name: 'student name')
+    end
+    it 'allows a course to be joined' do
+      result = subject.result
+      expect(result[:failure]).to be_nil
+      expect(result[:success]).to_not be_nil
+    end
+  end
+
+  context 'without real name' do
+    let(:course) { create(:basic_course) }
+    let(:subject) do
+      described_class.new(course: course, user: user,
+                          role: CoursesUsers::Roles::STUDENT_ROLE,
+                          real_name: nil)
+    end
+    it 'allows a course to be joined' do
+      result = subject.result
+      expect(result[:failure]).to be_nil
+      expect(result[:success]).to_not be_nil
+    end
   end
 
   context 'for a ClassroomProgramCourse' do

@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'rails_helper'
 
 describe SalesforceController do
@@ -29,6 +30,16 @@ describe SalesforceController do
         put :link, params: { course_id: course.id, salesforce_id: 'a0f1a000001Wyar' }
         expect(response.code).to eq('401')
       end
+    end
+  end
+
+  describe '#update' do
+    before { allow(controller).to receive(:current_user).and_return(admin) }
+
+    let(:course) { create(:course, flags: { salesforce_id: 'a0f1a000001Wyar' }) }
+    it 'updates the Salesforce record for a course' do
+      expect_any_instance_of(Restforce::Data::Client).to receive(:update!).and_return(true)
+      put :update, params: { course_id: course.id }
     end
   end
 
